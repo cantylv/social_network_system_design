@@ -1,0 +1,374 @@
+openapi: 3.0.3
+info:
+  title: Travel Social Network API
+  version: 1.0.0
+
+servers:
+  - url: https://api.travel.com
+
+tags:
+  - name: Users & Profiles
+  - name: Posts
+  - name: Places
+  - name: Feed
+  - name: Comments
+  - name: Reactions
+  - name: Search
+  - name: Recommendations
+  - name: Voice Messages
+  - name: Notifications
+  - name: Content Control
+
+paths:
+
+  /users/{userId}:
+    get:
+      tags: [Users & Profiles]
+      summary: Get user profile
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: User profile
+
+  /users/me:
+    patch:
+      tags: [Users & Profiles]
+      summary: Update profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        200:
+          description: Updated
+
+  /users/{userId}/follow:
+    post:
+      tags: [Users & Profiles]
+      summary: Follow user
+      responses:
+        204:
+          description: Followed
+    delete:
+      tags: [Users & Profiles]
+      summary: Unfollow user
+      responses:
+        204:
+          description: Unfollowed
+
+  /users/{userId}/followers:
+    get:
+      tags: [Users & Profiles]
+      summary: Get followers list
+      responses:
+        200:
+          description: Followers list
+
+  /users/{userId}/following:
+    get:
+      tags: [Users & Profiles]
+      summary: Get following list
+      responses:
+        200:
+          description: Following list
+
+  /users/{userId}/block:
+    post:
+      tags: [Content Control]
+      summary: Block user
+      responses:
+        204:
+          description: Blocked
+
+  /posts:
+    post:
+      tags: [Posts]
+      summary: Create post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mediaUrls, description, placeId]
+              properties:
+                mediaUrls:
+                  type: array
+                  items:
+                    type: string
+                description:
+                  type: string
+                placeId:
+                  type: string
+                categories:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        201:
+          description: Post created
+
+  /posts/{postId}:
+    get:
+      tags: [Posts]
+      summary: Get post
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Post details
+    delete:
+      tags: [Posts]
+      summary: Delete post
+      responses:
+        204:
+          description: Deleted
+
+  /posts/{postId}/favorite:
+    post:
+      tags: [Posts]
+      summary: Save post to favorites
+      responses:
+        204:
+          description: Saved
+    delete:
+      tags: [Posts]
+      summary: Remove from favorites
+      responses:
+        204:
+          description: Removed
+
+  /posts/{postId}/comments:
+    post:
+      tags: [Comments]
+      summary: Add comment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  maxLength: 2048
+      responses:
+        201:
+          description: Comment created
+    get:
+      tags: [Comments]
+      summary: Get comments
+      parameters:
+        - name: cursor
+          in: query
+          schema:
+            type: string
+      responses:
+        200:
+          description: List of comments
+
+  /comments/{commentId}:
+    delete:
+      tags: [Comments]
+      summary: Delete comment
+      responses:
+        204:
+          description: Deleted
+
+  /comments/{commentId}/replies:
+    post:
+      tags: [Comments]
+      summary: Reply to comment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  maxLength: 2048
+      responses:
+        201:
+          description: Reply created
+
+  /comments/{commentId}/reactions:
+    post:
+      tags: [Reactions]
+      summary: Like comment
+      responses:
+        204:
+          description: Liked
+    delete:
+      tags: [Reactions]
+      summary: Remove like from comment
+      responses:
+        204:
+          description: Unliked
+
+  /posts/{postId}/reactions:
+    post:
+      tags: [Reactions]
+      summary: Like post
+      responses:
+        204:
+          description: Liked
+    delete:
+      tags: [Reactions]
+      summary: Remove like
+      responses:
+        204:
+          description: Unliked
+
+  /posts/{postId}/hide:
+    post:
+      tags: [Content Control]
+      summary: Hide post for 30 days
+      responses:
+        204:
+          description: Hidden
+
+  /feed:
+    get:
+      tags: [Feed]
+      summary: Get user feed
+      parameters:
+        - name: cursor
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        200:
+          description: Feed list
+
+  /recommendations:
+    get:
+      tags: [Recommendations]
+      summary: Get personalized recommendations
+      parameters:
+        - name: cursor
+          in: query
+          schema:
+            type: string
+      responses:
+        200:
+          description: Recommendations list
+
+  /trending:
+    get:
+      tags: [Recommendations]
+      summary: Get trending posts and places
+      responses:
+        200:
+          description: Trending content
+
+  /search:
+    get:
+      tags: [Search]
+      summary: Search posts, users, places
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [post, user, place]
+      responses:
+        200:
+          description: Search results
+
+  /search/autocomplete:
+    get:
+      tags: [Search]
+      summary: Autocomplete search
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Suggestions
+
+  /places:
+    get:
+      tags: [Places]
+      summary: Search places
+      parameters:
+        - name: query
+          in: query
+          schema:
+            type: string
+      responses:
+        200:
+          description: List of places
+
+  /places/{placeId}:
+    get:
+      tags: [Places]
+      summary: Get place details
+      responses:
+        200:
+          description: Place info
+
+  /notifications:
+    get:
+      tags: [Notifications]
+      summary: Get notifications
+      responses:
+        200:
+          description: Notifications list
+
+  /notifications/read:
+    post:
+      tags: [Notifications]
+      summary: Mark notifications as read
+      responses:
+        204:
+          description: Marked as read
+
+  /voice-messages:
+    post:
+      tags: [Voice Messages]
+      summary: Upload voice message
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        201:
+          description: Uploaded
+
+  /voice-messages/{id}:
+    get:
+      tags: [Voice Messages]
+      summary: Get voice message (playback)
+      responses:
+        200:
+          description: Audio stream
